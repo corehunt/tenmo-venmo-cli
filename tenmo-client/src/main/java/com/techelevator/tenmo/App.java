@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.List;
 
 public class App {
 
@@ -97,7 +98,13 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void sendBucks() {
-		// TODO Auto-generated method stub
+		System.out.println("Please select from the list who you'd like to send money to (using their ID): ");
+		ResponseEntity<User[]> allUsers = restTemplate.exchange(API_BASE_URL + "/listusers", HttpMethod.GET, makeAuthEntity(), User[].class);
+		User[] users = allUsers.getBody();
+		for(User u : users){
+			System.out.println(u.getId() + " " +  u.getUsername());
+		}
+
 		
 	}
 

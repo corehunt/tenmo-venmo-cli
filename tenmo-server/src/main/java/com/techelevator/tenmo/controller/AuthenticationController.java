@@ -2,6 +2,7 @@ package com.techelevator.tenmo.controller;
 
 import javax.validation.Valid;
 
+import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -21,6 +22,8 @@ import com.techelevator.tenmo.security.jwt.TokenProvider;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Controller to authenticate users.
@@ -62,14 +65,31 @@ public class AuthenticationController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User registration failed.");
         }
     }
+    @RequestMapping(value = "/listusers",method = RequestMethod.GET)
+    public List<User> listUsers(){
+        List<User> usersToShow = new ArrayList<>();
+        List<User> allUsers = userDao.findAll();
+        Long currentUserId = currentUser.user.getId();
+        for(User u : allUsers){
+            if(u.getId().equals( currentUserId)) {
 
+            }else{
+                usersToShow.add(u);
+            }
+        }
+        return usersToShow;
+    }
 
     @RequestMapping(value = "/currentBalance", method = RequestMethod.GET)
     public BigDecimal viewCurrentBalance(){
         return userDao.getBalance(currentUser.getUser());
     }
 
-
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/send",method = RequestMethod.POST)
+    public Transfer sendMoney(@Valid @RequestBody Transfer transfer){
+        return userDao.createSend(transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
+    }
     /**
      * Object to return as body in JWT Authentication.
      */
