@@ -69,6 +69,7 @@ public class AuthenticationController {
         return userDao.getBalance(currentUser.getUser());
     }
 
+
     /**
      * Object to return as body in JWT Authentication.
      */
