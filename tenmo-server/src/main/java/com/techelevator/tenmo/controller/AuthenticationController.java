@@ -1,6 +1,7 @@
 package com.techelevator.tenmo.controller;
 
 import javax.validation.Valid;
+import javax.xml.crypto.dsig.TransformService;
 
 import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpStatus;
@@ -90,6 +91,14 @@ public class AuthenticationController {
     public Transfer sendMoney(@Valid @RequestBody Transfer transfer){
         return userDao.createSend(transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
     }
+
+    //VIEW TRANSFER HISTORY
+    @RequestMapping(value = "/transferHistory", method = RequestMethod.GET)
+    public List<Transfer> transferHistory(){
+        return userDao.transferHistory(currentUser.getUser());
+    }
+
+
     /**
      * Object to return as body in JWT Authentication.
      */

@@ -108,9 +108,21 @@ public class JdbcUserDao implements UserDao {
             transfer = jdbcTemplate.queryForObject(sql, Transfer.class, currentUser, receivingUser, amount);
         }catch (DataAccessException e){
 
+    @Override
+    public List<Transfer> transferHistory(User user) {
+        List<Transfer> listOfTransfers = new ArrayList<>();
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                     "FROM transfers " +
+                     "JOIN accounts ON account_from = account_id " +
+                     "ORDER BY user_id = ?";
+
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId());
+        while(results.next()) {
+            listOfTransfers.add(mapRowToTransfer(results));
         }
-        return transfer;
+        return listOfTransfers;
     }
+
 
     private User mapRowToUser(SqlRowSet rs) {
         User user = new User();
@@ -120,5 +132,16 @@ public class JdbcUserDao implements UserDao {
         user.setActivated(true);
         user.setAuthorities("USER");
         return user;
+    }
+
+    private Transfer mapRowToTransfer(SqlRowSet rowSet) {
+        Transfer transfer = new Transfer();
+        transfer.setTransferId(rowSet.getInt("transfer_id"));
+        transfer.setTransferTypeId(rowSet.getInt("transfer_type_id"));
+        transfer.setTransferStatusId(rowSet.getInt("transfer_status_id"));
+        transfer.setAccountFrom(rowSet.getInt("account_from"));
+        transfer.setAccountTo(rowSet.getInt("account_to"));
+        transfer.setAmount(rowSet.getBigDecimal("amount"));
+        return transfer;
     }
 }

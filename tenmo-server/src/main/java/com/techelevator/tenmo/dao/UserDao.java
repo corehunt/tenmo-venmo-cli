@@ -21,4 +21,5 @@ public interface UserDao {
     Transfer createSend(int currentUser, int receivingUser, BigDecimal amount);
 
     int getAccountNumber(int userId);
+    List<Transfer> transferHistory(User user);
 }
