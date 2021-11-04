@@ -20,6 +20,8 @@ import com.techelevator.tenmo.model.User;
 import com.techelevator.tenmo.security.jwt.TokenProvider;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+
 /**
  * Controller to authenticate users.
  */
@@ -29,6 +31,7 @@ public class AuthenticationController {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private UserDao userDao;
+    private LoginResponse currentUser;
 
     public AuthenticationController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, UserDao userDao) {
         this.tokenProvider = tokenProvider;
@@ -47,8 +50,9 @@ public class AuthenticationController {
         String jwt = tokenProvider.createToken(authentication, false);
         
         User user = userDao.findByUsername(loginDto.getUsername());
-
-        return new LoginResponse(jwt, user);
+        currentUser = new LoginResponse(jwt, user);
+        System.out.println(currentUser.getUser().toString());
+        return currentUser;
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -57,6 +61,12 @@ public class AuthenticationController {
         if (!userDao.create(newUser.getUsername(), newUser.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User registration failed.");
         }
+    }
+
+
+    @RequestMapping(value = "/currentBalance", method = RequestMethod.GET)
+    public BigDecimal viewCurrentBalance(){
+        return userDao.getBalance(currentUser.getUser());
     }
 
     /**
