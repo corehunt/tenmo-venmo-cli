@@ -33,7 +33,17 @@ public class JdbcUserDao implements UserDao {
             return -1;
     }
     }
-
+    @Override
+    public int getAccountNumber(int userId){
+        String sql = "SELECT account_id FROM accounts WHERE user_id = ?";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql,userId);
+        int accountId = -1;
+        if(results.next()){
+            accountId = results.getInt("account_id");
+            return accountId;
+        }
+        return accountId;
+    }
     @Override
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
@@ -90,6 +100,13 @@ public class JdbcUserDao implements UserDao {
 
         return userBalance;
     }
+    @Override
+    public Transfer createSend(int currentUser, int receivingUser, BigDecimal amount){
+        String sql = "INSERT INTO transfers (transfer_type_id,transfer_status_id,account_from,account_to,amount) VALUES (2,2,?,?,?) RETURNING transfer_id;";
+        Transfer transfer = new Transfer();
+        try {
+            transfer = jdbcTemplate.queryForObject(sql, Transfer.class, currentUser, receivingUser, amount);
+        }catch (DataAccessException e){
 
     @Override
     public List<Transfer> transferHistory(User user) {

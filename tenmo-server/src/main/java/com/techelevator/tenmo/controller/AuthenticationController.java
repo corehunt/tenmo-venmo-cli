@@ -23,6 +23,7 @@ import com.techelevator.tenmo.security.jwt.TokenProvider;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,13 +66,31 @@ public class AuthenticationController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User registration failed.");
         }
     }
+    @RequestMapping(value = "/listusers",method = RequestMethod.GET)
+    public List<User> listUsers(){
+        List<User> usersToShow = new ArrayList<>();
+        List<User> allUsers = userDao.findAll();
+        Long currentUserId = currentUser.user.getId();
+        for(User u : allUsers){
+            if(u.getId().equals( currentUserId)) {
 
-    //VIEW CURRENT BALANCE METHOD
+            }else{
+                usersToShow.add(u);
+            }
+        }
+        return usersToShow;
+    }
+
     @RequestMapping(value = "/currentBalance", method = RequestMethod.GET)
     public BigDecimal viewCurrentBalance(){
         return userDao.getBalance(currentUser.getUser());
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/send",method = RequestMethod.POST)
+    public Transfer sendMoney(@Valid @RequestBody Transfer transfer){
+        return userDao.createSend(transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
+    }
 
     //VIEW TRANSFER HISTORY
     @RequestMapping(value = "/transferHistory", method = RequestMethod.GET)
