@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.concurrent.TransferQueue;
 
 public class App {
 
@@ -33,6 +34,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
+
 
     public static void main(String[] args) {
     	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL));
@@ -87,8 +89,13 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewTransferHistory() {
-		// TODO Auto-generated method stub
-		
+		try {
+			ResponseEntity<String> result = restTemplate.exchange(API_BASE_URL + "/transferHistory", HttpMethod.GET, makeAuthEntity(), String.class);
+			String transferList = result.getBody();
+			System.out.println(transferList);
+		} catch (RestClientResponseException | ResourceAccessException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 
 	private void viewPendingRequests() {
@@ -98,7 +105,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 	private void sendBucks() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	private void requestBucks() {

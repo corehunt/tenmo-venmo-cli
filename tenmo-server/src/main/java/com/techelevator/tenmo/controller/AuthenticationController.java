@@ -1,7 +1,9 @@
 package com.techelevator.tenmo.controller;
 
 import javax.validation.Valid;
+import javax.xml.crypto.dsig.TransformService;
 
+import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -21,6 +23,7 @@ import com.techelevator.tenmo.security.jwt.TokenProvider;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Controller to authenticate users.
@@ -63,10 +66,17 @@ public class AuthenticationController {
         }
     }
 
-
+    //VIEW CURRENT BALANCE METHOD
     @RequestMapping(value = "/currentBalance", method = RequestMethod.GET)
     public BigDecimal viewCurrentBalance(){
         return userDao.getBalance(currentUser.getUser());
+    }
+
+
+    //VIEW TRANSFER HISTORY
+    @RequestMapping(value = "/transferHistory", method = RequestMethod.GET)
+    public List<Transfer> transferHistory(){
+        return userDao.transferHistory(currentUser.getUser());
     }
 
 

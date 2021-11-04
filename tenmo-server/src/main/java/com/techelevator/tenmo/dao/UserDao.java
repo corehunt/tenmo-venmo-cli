@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
 
 import java.math.BigDecimal;
@@ -16,4 +17,6 @@ public interface UserDao {
     boolean create(String username, String password);
 
     BigDecimal getBalance(User user);
+
+    List<Transfer> transferHistory(User user);
 }
