@@ -100,7 +100,9 @@ public class JdbcUserDao implements UserDao {
 
         return userBalance;
     }
+
     @Override
+        public Transfer createSend(Long currentUser, Long receivingUser, BigDecimal amount){
         String sql = "INSERT INTO transfers (transfer_type_id,transfer_status_id,account_from,account_to,amount) VALUES (2,2,?,?,?) RETURNING transfer_id;";
         Transfer transfer = new Transfer();
         try {
@@ -124,13 +126,7 @@ public class JdbcUserDao implements UserDao {
         while(results.next()) {
             listOfTransfers.add(mapRowToTransfer(results));
         }
-                             "WHERE user_id = ? " +
-                             "ORDER BY user_id = ?";
 
-                SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId(), user.getId());
-                while (results.next()) {
-                    listOfTransfers.add(mapRowToTransfer(results));
-                }
 
                 sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
                         "FROM transfers " +
@@ -156,15 +152,26 @@ public class JdbcUserDao implements UserDao {
     }
     @Override
     public void decreaseBalance(Long userId, BigDecimal amount){
+        System.out.println(amount);
         String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?";
         BigDecimal balanceToChange = getBalance(userId);
-        jdbcTemplate.update(sql,balanceToChange.subtract(amount), userId);
+        jdbcTemplate.update(sql,balanceToChange.subtract(amount).doubleValue(), userId);
     }
     @Override
     public void increaseBalance(Long userId, BigDecimal amount){
         String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?";
         BigDecimal balanceToChange = getBalance(userId);
         jdbcTemplate.update(sql,balanceToChange.add(amount), userId);
+    }
+
+    private User mapRowToUser (SqlRowSet rs){
+        User user = new User();
+        user.setId(rs.getLong("user_id"));
+        user.setUsername(rs.getString("username"));
+        user.setPassword(rs.getString("password_hash"));
+        user.setActivated(true);
+        user.setAuthorities("USER");
+        return user;
     }
 
 

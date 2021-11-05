@@ -90,9 +90,9 @@ public class AuthenticationController {
     @RequestMapping(value = "/send",method = RequestMethod.POST)
     public Transfer sendMoney(@Valid @RequestBody Transfer transfer){
         Transfer transfer1 = userDao.createSend(currentUser.user.getId(), (long) transfer.getAccountTo(), transfer.getAmount());
-        userDao.decreaseBalance(currentUser.user.getId(),transfer1.getAmount());
+        userDao.decreaseBalance(currentUser.user.getId(),transfer.getAmount());
         Long receiverId = (long) transfer.getAccountTo();
-        userDao.increaseBalance(receiverId,transfer1.getAmount());
+        userDao.increaseBalance(receiverId,transfer.getAmount());
         return transfer1;
     }
 
