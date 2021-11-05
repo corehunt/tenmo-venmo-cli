@@ -1,6 +1,7 @@
 package com.techelevator.tenmo;
 
 import com.techelevator.tenmo.model.AuthenticatedUser;
+import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
 import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TransferQueue;
 
@@ -35,6 +37,8 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
+    private User user;
+    private BigDecimal balanceAsBigD;
 
 
     public static void main(String[] args) {
@@ -78,15 +82,17 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		}
 	}
 
-	private void viewCurrentBalance() {
+	private BigDecimal viewCurrentBalance() {
 		try {
 			ResponseEntity<String> result = restTemplate.exchange(API_BASE_URL + "/currentBalance", HttpMethod.GET, makeAuthEntity(), String.class);
 			String balance = result.getBody();
 			System.out.println("Your current balance is: $" + balance);
+			double parseBalance = Double.parseDouble(balance);
+			balanceAsBigD = new BigDecimal(parseBalance);
 		}catch(RestClientResponseException | ResourceAccessException e){
 			System.out.println(e.getMessage());
 		}
-
+		return balanceAsBigD;
 	}
 
 	private void viewTransferHistory() {
@@ -94,6 +100,8 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 			ResponseEntity<String> result = restTemplate.exchange(API_BASE_URL + "/transferHistory", HttpMethod.GET, makeAuthEntity(), String.class);
 			String transferList = result.getBody();
 			System.out.println(transferList);
+
+
 		} catch (RestClientResponseException | ResourceAccessException e) {
 			System.out.println(e.getMessage());
 		}
@@ -111,6 +119,46 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		for(User u : users){
 			System.out.println(u.getId() + " " +  u.getUsername());
 		}
+		// response from user for who to send to
+		System.out.println("");
+		int userId = console.getUserInputInteger("User ID");
+		double amountFromUser = 0.00;
+		while(amountFromUser == 0.00) {
+			BigDecimal results = finalRequestAmt();
+			amountFromUser = results.doubleValue();
+		}
+		BigDecimal amt2Send = new BigDecimal(amountFromUser);
+
+
+
+
+
+
+
+//		boolean goOn = false;
+//
+
+//		viewCurrentBalance();
+//		while(!goOn) {
+//			if(amt2Send.compareTo(balanceAsBigD) != 1) {
+//				goOn = true;
+//			} else {
+//				System.out.println("You are trying to send more money than is your account. Please try again!");
+//				console.getUserInput("Amount to send");
+//			}
+//		}
+
+
+		Transfer sendBucksTransfer = new Transfer();
+		sendBucksTransfer.setTransferTypeId(2);
+		sendBucksTransfer.setTransferStatusId(2);
+		sendBucksTransfer.setAccountFrom(currentUser.getUser().getId());
+		sendBucksTransfer.setAccountTo(userId);
+		sendBucksTransfer.setAmount(amt2Send);
+
+
+		//another http request for who to send money to. POST to send object (who to send to, and how much)
+		ResponseEntity<String> result = restTemplate.exchange(API_BASE_URL + "/send", HttpMethod.POST, makeTransferEntity(sendBucksTransfer), String.class);
 
 		
 	}
@@ -183,5 +231,25 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(currentUser.getToken());
 		return new HttpEntity<>(headers);
+	}
+
+	private HttpEntity<Transfer> makeTransferEntity(Transfer sendBucks) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setBearerAuth(currentUser.getToken());
+		return new HttpEntity<>(sendBucks, headers);
+	}
+
+	private BigDecimal finalRequestAmt() {
+		double amountFromUser = console.getUserInputInteger("Amount to send");
+		BigDecimal finalAmount = new BigDecimal(amountFromUser);
+
+		viewCurrentBalance();
+		if(finalAmount.compareTo(balanceAsBigD) != 1){
+			return finalAmount;
+		} else {
+			return new BigDecimal(0);
+		}
+
 	}
 }

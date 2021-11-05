@@ -101,47 +101,62 @@ public class JdbcUserDao implements UserDao {
         return userBalance;
     }
     @Override
-    public Transfer createSend(int currentUser, int receivingUser, BigDecimal amount){
+    public Transfer createSend(int currentUser, int receivingUser, BigDecimal amount) {
         String sql = "INSERT INTO transfers (transfer_type_id,transfer_status_id,account_from,account_to,amount) VALUES (2,2,?,?,?) RETURNING transfer_id;";
         Transfer transfer = new Transfer();
         try {
             transfer = jdbcTemplate.queryForObject(sql, Transfer.class, currentUser, receivingUser, amount);
-        }catch (DataAccessException e){
+        } catch (DataAccessException e) {
 
-    @Override
-    public List<Transfer> transferHistory(User user) {
-        List<Transfer> listOfTransfers = new ArrayList<>();
-        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
-                     "FROM transfers " +
-                     "JOIN accounts ON account_from = account_id " +
-                     "ORDER BY user_id = ?";
-
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId());
-        while(results.next()) {
-            listOfTransfers.add(mapRowToTransfer(results));
         }
-        return listOfTransfers;
-    }
-
-
-    private User mapRowToUser(SqlRowSet rs) {
-        User user = new User();
-        user.setId(rs.getLong("user_id"));
-        user.setUsername(rs.getString("username"));
-        user.setPassword(rs.getString("password_hash"));
-        user.setActivated(true);
-        user.setAuthorities("USER");
-        return user;
-    }
-
-    private Transfer mapRowToTransfer(SqlRowSet rowSet) {
-        Transfer transfer = new Transfer();
-        transfer.setTransferId(rowSet.getInt("transfer_id"));
-        transfer.setTransferTypeId(rowSet.getInt("transfer_type_id"));
-        transfer.setTransferStatusId(rowSet.getInt("transfer_status_id"));
-        transfer.setAccountFrom(rowSet.getInt("account_from"));
-        transfer.setAccountTo(rowSet.getInt("account_to"));
-        transfer.setAmount(rowSet.getBigDecimal("amount"));
         return transfer;
     }
-}
+
+            @Override
+            public List<Transfer> transferHistory (User user){
+                List<Transfer> listOfTransfers = new ArrayList<>();
+                String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                             "FROM transfers " +
+                             "JOIN accounts ON account_from = account_id " +
+                             "WHERE user_id = ? " +
+                             "ORDER BY user_id = ?";
+
+                SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId(), user.getId());
+                while (results.next()) {
+                    listOfTransfers.add(mapRowToTransfer(results));
+                }
+
+                sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                        "FROM transfers " +
+                        "JOIN accounts ON account_to = account_id " +
+                        "WHERE user_id = ? " +
+                        "ORDER BY user_id = ?";
+                results = jdbcTemplate.queryForRowSet(sql, user.getId(), user.getId());
+                while (results.next()) {
+                    listOfTransfers.add(mapRowToTransfer(results));
+                }
+                return listOfTransfers;
+            }
+
+
+            private User mapRowToUser (SqlRowSet rs){
+                User user = new User();
+                user.setId(rs.getLong("user_id"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password_hash"));
+                user.setActivated(true);
+                user.setAuthorities("USER");
+                return user;
+            }
+
+            private Transfer mapRowToTransfer (SqlRowSet rowSet){
+                Transfer transfer = new Transfer();
+                transfer.setTransferId(rowSet.getInt("transfer_id"));
+                transfer.setTransferTypeId(rowSet.getInt("transfer_type_id"));
+                transfer.setTransferStatusId(rowSet.getInt("transfer_status_id"));
+                transfer.setAccountFrom(rowSet.getInt("account_from"));
+                transfer.setAccountTo(rowSet.getInt("account_to"));
+                transfer.setAmount(rowSet.getBigDecimal("amount"));
+                return transfer;
+            }
+        }
