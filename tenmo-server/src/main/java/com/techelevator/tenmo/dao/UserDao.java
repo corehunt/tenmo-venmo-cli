@@ -16,10 +16,15 @@ public interface UserDao {
 
     boolean create(String username, String password);
 
-    BigDecimal getBalance(User user);
+    BigDecimal getBalance(Long userId);
 
-    Transfer createSend(int currentUser, int receivingUser, BigDecimal amount);
+    Transfer createSend(Long currentUser, Long receivingUser, BigDecimal amount);
 
-    int getAccountNumber(int userId);
+    int getAccountNumber(Long userId);
+
     List<Transfer> transferHistory(User user);
+
+    void decreaseBalance(Long userId, BigDecimal amount);
+
+    void increaseBalance(Long userId, BigDecimal amount);
 }

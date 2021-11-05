@@ -155,7 +155,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		sendBucksTransfer.setAccountFrom(currentUser.getUser().getId());
 		sendBucksTransfer.setAccountTo(userId);
 		sendBucksTransfer.setAmount(amt2Send);
-
+		System.out.println(amt2Send);
 
 		//another http request for who to send money to. POST to send object (who to send to, and how much)
 		ResponseEntity<String> result = restTemplate.exchange(API_BASE_URL + "/send", HttpMethod.POST, makeTransferEntity(sendBucksTransfer), String.class);

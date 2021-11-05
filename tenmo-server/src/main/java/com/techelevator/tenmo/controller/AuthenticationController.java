@@ -83,13 +83,17 @@ public class AuthenticationController {
 
     @RequestMapping(value = "/currentBalance", method = RequestMethod.GET)
     public BigDecimal viewCurrentBalance(){
-        return userDao.getBalance(currentUser.getUser());
+        return userDao.getBalance(currentUser.getUser().getId());
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/send",method = RequestMethod.POST)
     public Transfer sendMoney(@Valid @RequestBody Transfer transfer){
-        return userDao.createSend(transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
+        Transfer transfer1 = userDao.createSend(currentUser.user.getId(), (long) transfer.getAccountTo(), transfer.getAmount());
+        userDao.decreaseBalance(currentUser.user.getId(),transfer.getAmount());
+        Long receiverId = (long) transfer.getAccountTo();
+        userDao.increaseBalance(receiverId,transfer.getAmount());
+        return transfer1;
     }
 
     //VIEW TRANSFER HISTORY
