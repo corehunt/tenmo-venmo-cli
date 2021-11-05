@@ -34,7 +34,7 @@ public class JdbcUserDao implements UserDao {
     }
     }
     @Override
-    public int getAccountNumber(int userId){
+    public int getAccountNumber(Long userId){
         String sql = "SELECT account_id FROM accounts WHERE user_id = ?";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql,userId);
         int accountId = -1;
@@ -90,10 +90,10 @@ public class JdbcUserDao implements UserDao {
         return true;
     }
     @Override
-    public BigDecimal getBalance(User user){
+    public BigDecimal getBalance(Long userId){
         BigDecimal userBalance = new BigDecimal(0.00);
         String sql = "SELECT balance FROM accounts JOIN users USING(user_id) WHERE user_id = ?";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql,user.getId());
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql,userId);
         if(results.next()){
             userBalance = results.getBigDecimal("balance");
         }
@@ -101,12 +101,17 @@ public class JdbcUserDao implements UserDao {
         return userBalance;
     }
     @Override
-    public Transfer createSend(int currentUser, int receivingUser, BigDecimal amount){
+    public Transfer createSend(Long currentUser, Long receivingUser, BigDecimal amount){
         String sql = "INSERT INTO transfers (transfer_type_id,transfer_status_id,account_from,account_to,amount) VALUES (2,2,?,?,?) RETURNING transfer_id;";
         Transfer transfer = new Transfer();
         try {
-            transfer = jdbcTemplate.queryForObject(sql, Transfer.class, currentUser, receivingUser, amount);
+            transfer = jdbcTemplate.queryForObject(sql, Transfer.class, getAccountNumber(currentUser), getAccountNumber(receivingUser), amount);
         }catch (DataAccessException e){
+
+        }
+
+        return transfer;
+    }
 
     @Override
     public List<Transfer> transferHistory(User user) {
@@ -144,4 +149,18 @@ public class JdbcUserDao implements UserDao {
         transfer.setAmount(rowSet.getBigDecimal("amount"));
         return transfer;
     }
+    @Override
+    public void decreaseBalance(Long userId, BigDecimal amount){
+        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?";
+        BigDecimal balanceToChange = getBalance(userId);
+        jdbcTemplate.update(sql,balanceToChange.subtract(amount), userId);
+    }
+    @Override
+    public void increaseBalance(Long userId, BigDecimal amount){
+        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?";
+        BigDecimal balanceToChange = getBalance(userId);
+        jdbcTemplate.update(sql,balanceToChange.add(amount), userId);
+    }
+
+
 }
