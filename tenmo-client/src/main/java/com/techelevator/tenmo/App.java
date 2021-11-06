@@ -64,7 +64,8 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		while(true) {
 			String choice = (String)console.getChoiceFromOptions(MAIN_MENU_OPTIONS);
 			if(MAIN_MENU_OPTION_VIEW_BALANCE.equals(choice)) {
-				viewCurrentBalance();
+				BigDecimal currentBalance = viewCurrentBalance();
+				System.out.println("Your balance is: $" + currentBalance);
 			} else if(MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS.equals(choice)) {
 				viewTransferHistory();
 			} else if(MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS.equals(choice)) {
@@ -86,7 +87,6 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		try {
 			ResponseEntity<String> result = restTemplate.exchange(API_BASE_URL + "/currentBalance", HttpMethod.GET, makeAuthEntity(), String.class);
 			String balance = result.getBody();
-			System.out.println("Your current balance is: $" + balance);
 			double parseBalance = Double.parseDouble(balance);
 			balanceAsBigD = new BigDecimal(parseBalance);
 		}catch(RestClientResponseException | ResourceAccessException e){
@@ -97,9 +97,11 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 	private void viewTransferHistory() {
 		try {
-			ResponseEntity<String> result = restTemplate.exchange(API_BASE_URL + "/transferHistory", HttpMethod.GET, makeAuthEntity(), String.class);
-			String transferList = result.getBody();
-			System.out.println(transferList);
+			ResponseEntity<Transfer[]> result = restTemplate.exchange(API_BASE_URL + "/transferHistory", HttpMethod.GET, makeAuthEntity(), Transfer[].class);
+			Transfer[] transferList = result.getBody();
+			for (Transfer transfer : transferList) {
+				System.out.println(transfer.toString());
+			}
 
 
 		} catch (RestClientResponseException | ResourceAccessException e) {
@@ -155,11 +157,10 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		sendBucksTransfer.setAccountFrom(currentUser.getUser().getId());
 		sendBucksTransfer.setAccountTo(userId);
 		sendBucksTransfer.setAmount(amt2Send);
-		System.out.println(amt2Send);
 
 		//another http request for who to send money to. POST to send object (who to send to, and how much)
 		ResponseEntity<String> result = restTemplate.exchange(API_BASE_URL + "/send", HttpMethod.POST, makeTransferEntity(sendBucksTransfer), String.class);
-
+		System.out.println("Sent!");
 		
 	}
 
@@ -248,6 +249,8 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		if(finalAmount.compareTo(balanceAsBigD) != 1){
 			return finalAmount;
 		} else {
+			BigDecimal currentBalance = viewCurrentBalance();
+			System.out.println("You can't send that much. You only have $" + currentBalance + " in your account");
 			return new BigDecimal(0);
 		}
 

@@ -120,7 +120,8 @@ public class JdbcUserDao implements UserDao {
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
                      "FROM transfers " +
                      "JOIN accounts ON account_from = account_id " +
-                     "ORDER BY user_id = ?";
+                    "WHERE user_id = ?" +
+                     "ORDER BY user_id";
 
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId());
         while(results.next()) {
@@ -152,7 +153,6 @@ public class JdbcUserDao implements UserDao {
     }
     @Override
     public void decreaseBalance(Long userId, BigDecimal amount){
-        System.out.println(amount);
         String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?";
         BigDecimal balanceToChange = getBalance(userId);
         jdbcTemplate.update(sql,balanceToChange.subtract(amount).doubleValue(), userId);

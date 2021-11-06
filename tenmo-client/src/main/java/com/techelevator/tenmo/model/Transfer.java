@@ -74,13 +74,27 @@ public class Transfer {
 
     @Override
     public String toString() {
-        return "-----Transfer-----{" +
-                "transferId=" + transferId +
-                ", transferTypeId=" + transferTypeId +
-                ", transferStatusId=" + transferStatusId +
-                ", accountFrom=" + accountFrom +
-                ", accountTo=" + accountTo +
-                ", amount=" + amount +
-                '}';
+        String transferType;
+        String transferStatus;
+        if (transferTypeId == 2){
+            transferType = "Send";
+        }else{
+            transferType = "Request";
+        }
+        if (transferStatusId == 2){
+            transferStatus = "Approved";
+        }else if(transferStatusId == 1){
+            transferStatus = "Pending";
+        }else{
+            transferStatus = "Rejected";
+        }
+
+        return "-----Transfer-----" +
+                "ID=" + transferId +
+                ", transferType = " + transferType +
+                ", transferStatus = " + transferStatus +
+                ", accountFrom = " + accountFrom +
+                ", accountTo = " + accountTo +
+                ", amount = $" + amount + "\n";
     }
 }
