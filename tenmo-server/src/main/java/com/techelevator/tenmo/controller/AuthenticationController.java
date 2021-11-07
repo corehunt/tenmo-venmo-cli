@@ -5,6 +5,7 @@ import javax.xml.crypto.dsig.TransformService;
 
 import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -55,7 +56,6 @@ public class AuthenticationController {
         
         User user = userDao.findByUsername(loginDto.getUsername());
         currentUser = new LoginResponse(jwt, user);
-        System.out.println(currentUser.getUser().toString());
         return currentUser;
     }
 
@@ -85,7 +85,7 @@ public class AuthenticationController {
     public BigDecimal viewCurrentBalance(){
         return userDao.getBalance(currentUser.getUser().getId());
     }
-
+    @PreAuthorize("hasRole('ROLE_USER')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/send",method = RequestMethod.POST)
     public Transfer sendMoney(@Valid @RequestBody Transfer transfer){
