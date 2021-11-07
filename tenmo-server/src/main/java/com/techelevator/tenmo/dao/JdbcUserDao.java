@@ -120,9 +120,10 @@ public class JdbcUserDao implements UserDao {
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
                      "FROM transfers " +
                      "JOIN accounts ON account_from = account_id " +
+                     "WHERE user_id = ?" +
                      "ORDER BY user_id = ?";
 
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId());
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId(), user.getId());
         while(results.next()) {
             listOfTransfers.add(mapRowToTransfer(results));
         }

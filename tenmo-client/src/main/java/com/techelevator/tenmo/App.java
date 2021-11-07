@@ -1,5 +1,6 @@
 package com.techelevator.tenmo;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
@@ -7,6 +8,7 @@ import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
 import com.techelevator.view.ConsoleService;
+import io.cucumber.java.bs.A;
 import org.springframework.http.*;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
@@ -14,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TransferQueue;
@@ -101,7 +104,6 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 			String transferList = result.getBody();
 			System.out.println(transferList);
 
-
 		} catch (RestClientResponseException | ResourceAccessException e) {
 			System.out.println(e.getMessage());
 		}
@@ -128,26 +130,6 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 			amountFromUser = results.doubleValue();
 		}
 		BigDecimal amt2Send = new BigDecimal(amountFromUser);
-
-
-
-
-
-
-
-//		boolean goOn = false;
-//
-
-//		viewCurrentBalance();
-//		while(!goOn) {
-//			if(amt2Send.compareTo(balanceAsBigD) != 1) {
-//				goOn = true;
-//			} else {
-//				System.out.println("You are trying to send more money than is your account. Please try again!");
-//				console.getUserInput("Amount to send");
-//			}
-//		}
-
 
 		Transfer sendBucksTransfer = new Transfer();
 		sendBucksTransfer.setTransferTypeId(2);
